@@ -1,0 +1,66 @@
+{
+    "name": "anykrowd/laravel-payconiq-api",
+    "description": "Payconiq API wrapper for Laravel",
+    "keywords": [
+        "anykrowd",
+        "laravel-payconiq-api"
+    ],
+    "homepage": "https://github.com/anykrowd/laravel-payconiq-api",
+    "license": "MIT",
+    "type": "library",
+    "require": {
+        "php": "^7.4|^8.0|^8.1|^8.2",
+        "guzzlehttp/guzzle": "^7.4",
+        "guzzlehttp/oauth-subscriber": "^0.6.0",
+        "laravel/framework": "^9.46.0|^10.34.2|^11.0",
+        "symfony/cache": "^6.0",
+        "web-token/jwt-checker": "^2.2|^3.3",
+        "web-token/jwt-signature": "^2.2|^3.3",
+        "web-token/jwt-signature-algorithm-ecdsa": "^2.2|^3.3"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.14",
+        "pestphp/pest": "^1.23",
+        "phpstan/phpstan": "^1.10"
+    },
+    "autoload": {
+        "psr-4": {
+            "Anykrowd\\PayconiqApi\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Anykrowd\\PayconiqApi\\Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "lint": "pint -v",
+        "test:lint": "pint --test -v",
+        "test:types": "phpstan analyse --ansi",
+        "test:type-coverage": "pest --type-coverage --min=100",
+        "test:unit": "pest --colors=always",
+        "test": [
+            "@test:lint",
+            "@test:types",
+            "@test:type-coverage",
+            "@test:unit"
+        ]
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "pestphp/pest-plugin": true
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Anykrowd\\PayconiqApi\\PayconiqApiServiceProvider"
+            ],
+            "aliases": {
+                "PayconiqApi": "Anykrowd\\PayconiqApi\\PayconiqApiFacade"
+            }
+        }
+    }
+}
