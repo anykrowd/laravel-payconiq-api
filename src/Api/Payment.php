@@ -14,7 +14,7 @@ class Payment extends ApiEntity
     public function get(string $id)
     {
         return json_decode(
-            $this->payconiqApi->get('payments/'.$id)
+            $this->payconiqApi->get('payments/' . $id)
                 ->getBody()
                 ->getContents()
         );
@@ -38,7 +38,7 @@ class Payment extends ApiEntity
         ];
 
         return json_decode(
-            $this->payconiqApi->post('payments/search?'.http_build_query(['page' => $page, 'size' => $size]), $data)
+            $this->payconiqApi->post('payments/search?' . http_build_query(['page' => $page, 'size' => $size]), $data)
                 ->getBody()
                 ->getContents()
         );
@@ -69,6 +69,7 @@ class Payment extends ApiEntity
     /**
      * Cancel payment.
      *
+     * @param  string  $id
      * @return object
      *
      * @throws \GuzzleHttp\Exception\GuzzleException
@@ -76,7 +77,7 @@ class Payment extends ApiEntity
     public function cancel(string $id)
     {
         return json_decode(
-            $this->payconiqApi->delete('payments/'.$id)
+            $this->payconiqApi->delete('payments/' . $id)
                 ->getBody()
                 ->getContents()
         );
@@ -85,6 +86,7 @@ class Payment extends ApiEntity
     /**
      * Refund payment.
      *
+     * @param  string  $id
      * @return object
      *
      * @throws \GuzzleHttp\Exception\GuzzleException
@@ -92,7 +94,35 @@ class Payment extends ApiEntity
     public function refund(string $id)
     {
         return json_decode(
-            $this->payconiqApi->get('payments/'.$id.'/debtor/refundIban')
+            $this->payconiqApi->get('payments/' . $id . '/debtor/refundIban')
+                ->getBody()
+                ->getContents()
+        );
+    }
+
+    /**
+     * Create refund for payment.
+     *
+     * @param  string  $id
+     * @return object
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function refunds(string $id, int $amount, string $idempotencyKey)
+    {
+        $data = [
+            'headers' => [
+                'content-type' => 'application/json',
+                'Signature' => 'Bearer ' . $this->payconiqApi->getAccessToken(),
+                'Idempotency-Key' => $idempotencyKey,
+            ],
+            'body' => json_encode([
+                'amount' => $amount,
+            ]),
+        ];
+
+        return json_decode(
+            $this->payconiqApi->post('payments/' . $id . '/refunds', $data)
                 ->getBody()
                 ->getContents()
         );
