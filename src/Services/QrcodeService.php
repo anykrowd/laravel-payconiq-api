@@ -1,0 +1,116 @@
+<?php
+
+namespace Anykrowd\PayconiqApi\Services;
+
+use League\Url\Url;
+
+class QrcodeService
+{
+    public const PORTAL_URL                   = 'https://portal.payconiq.com/qrcode';
+    public const LOCATION_URL_SCHEME_STATIC   = 'https://payconiq.com/l/1/';
+    public const LOCATION_URL_SCHEME_METADATA = 'https://payconiq.com/t/1/';
+
+    public const FORMAT_PNG = 'PNG';
+    public const FORMAT_SVG = 'SVG';
+    public const FORMATS    = [
+        self::FORMAT_PNG,
+        self::FORMAT_SVG,
+    ];
+
+    public const SIZE_SMALL       = 'S';
+    public const SIZE_MEDIUM      = 'M';
+    public const SIZE_LARGE       = 'L';
+    public const SIZE_EXTRA_LARGE = 'XL';
+    public const SIZES            = [
+        self::SIZE_SMALL,
+        self::SIZE_MEDIUM,
+        self::SIZE_LARGE,
+        self::SIZE_EXTRA_LARGE,
+    ];
+
+    public const COLOR_BLACK   = 'black';
+    public const COLOR_MAGENTA = 'magenta';
+    public const COLORS        = [
+        self::COLOR_BLACK,
+        self::COLOR_MAGENTA,
+    ];
+
+    public static function customizePaymentQrLink(
+        string $qrLink,
+        string $format = self::FORMAT_PNG,
+        string $size = self::SIZE_SMALL,
+        string $color = self::COLOR_MAGENTA
+    ): string {
+        $url = Url::createFromUrl($qrLink);
+
+        if (in_array(strtoupper($format), self::FORMATS)) {
+            $url->getQuery()->modify(['f' => $format]);
+        }
+
+        if (in_array(strtoupper($size), self::SIZES)) {
+            $url->getQuery()->modify(['s' => $size]);
+        }
+
+        if (in_array(strtolower($color), self::COLORS)) {
+            $url->getQuery()->modify(['cl' => $color]);
+        }
+
+        return $url->__toString();
+    }
+
+    public static function generateStaticQRCodeLink(
+        string $paymentProfileId,
+        string $posId,
+        string $format = self::FORMAT_PNG,
+        string $size = self::SIZE_SMALL,
+        string $color = self::COLOR_MAGENTA
+    ): string {
+        $urlPayload = self::LOCATION_URL_SCHEME_STATIC . $paymentProfileId . '/' . $posId;
+
+        $url = Url::createFromUrl(self::PORTAL_URL);
+        $url->setQuery(['c' => $urlPayload]);
+
+        return self::customizePaymentQrLink($url->__toString(), $format, $size, $color);
+    }
+
+    public static function generateQRCodeWithMetadata(
+        string $paymentProfileId,
+        ?string $description,
+        ?int $amount,
+        ?string $reference,
+        string $format = self::FORMAT_PNG,
+        string $size = self::SIZE_SMALL,
+        string $color = self::COLOR_MAGENTA
+    ): string {
+        $urlPayload = Url::createFromUrl(self::LOCATION_URL_SCHEME_METADATA . $paymentProfileId);
+
+        if (!empty($description)) {
+            if (strlen($description) > 35) {
+                throw new \InvalidArgumentException('Description max length is 35 characters');
+            }
+
+            $urlPayload->getQuery()->modify(['D' => $description]);
+        }
+
+        if (null !== $amount) {
+            if ($amount < 1 || $amount > 999999) {
+                throw new \InvalidArgumentException('Amount must be between 1 - 999999 Euro cents');
+            }
+
+            $urlPayload->getQuery()->modify(['A' => $amount]);
+        }
+
+        if (!empty($reference)) {
+            if (strlen($reference) > 35) {
+                throw new \InvalidArgumentException('Reference max length is 35 characters');
+            }
+
+            $urlPayload->getQuery()->modify(['R' => $reference]);
+        }
+
+        $url = Url::createFromUrl(self::PORTAL_URL);
+        $url->setQuery(['c' => $urlPayload->__toString()]);
+
+        return self::customizePaymentQrLink($url->__toString(), $format, $size, $color);
+    }
+}
