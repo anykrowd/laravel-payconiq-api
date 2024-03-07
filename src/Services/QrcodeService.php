@@ -82,14 +82,28 @@ class QrcodeService
         string $size = self::SIZE_SMALL,
         string $color = self::COLOR_MAGENTA
     ): string {
-        $urlPayload = Url::createFromUrl(self::LOCATION_URL_SCHEME_METADATA . $paymentProfileId);
+        $urlPayload = self::generateUrlPayload($paymentProfileId, $description, $amount, $reference);
+
+        $url = Url::createFromUrl(self::PORTAL_URL);
+        $url->setQuery(['c' => $urlPayload]);
+
+        return self::customizePaymentQrLink($url, $format, $size, $color);
+    }
+
+    public static function generateUrlPayload(
+        string $paymentProfileId,
+        ?string $description,
+        ?int $amount,
+        ?string $reference,
+    ): string {
+        $url = Url::createFromUrl(self::LOCATION_URL_SCHEME_METADATA . $paymentProfileId);
 
         if (!empty($description)) {
             if (strlen($description) > 35) {
                 throw new \InvalidArgumentException('Description max length is 35 characters');
             }
 
-            $urlPayload->getQuery()->modify(['D' => $description]);
+            $url->getQuery()->modify(['D' => $description]);
         }
 
         if (null !== $amount) {
@@ -97,7 +111,7 @@ class QrcodeService
                 throw new \InvalidArgumentException('Amount must be between 1 - 999999 Euro cents');
             }
 
-            $urlPayload->getQuery()->modify(['A' => $amount]);
+            $url->getQuery()->modify(['A' => $amount]);
         }
 
         if (!empty($reference)) {
@@ -105,12 +119,9 @@ class QrcodeService
                 throw new \InvalidArgumentException('Reference max length is 35 characters');
             }
 
-            $urlPayload->getQuery()->modify(['R' => $reference]);
+            $url->getQuery()->modify(['R' => $reference]);
         }
 
-        $url = Url::createFromUrl(self::PORTAL_URL);
-        $url->setQuery(['c' => $urlPayload->__toString()]);
-
-        return self::customizePaymentQrLink($url->__toString(), $format, $size, $color);
+        return $url->__toString();
     }
 }
