@@ -11,7 +11,7 @@
     "require": {
         "php": "^7.4|^8.0|^8.1|^8.2",
         "guzzlehttp/guzzle": "^7.4",
-        "guzzlehttp/oauth-subscriber": "^0.6.0",
+        "guzzlehttp/oauth-subscriber": "^0.8.1",
         "laravel/framework": "^9.46.0|^10.34.2|^11.0",
         "league/uri": "^7.0",
         "league/url": "^3.3",
